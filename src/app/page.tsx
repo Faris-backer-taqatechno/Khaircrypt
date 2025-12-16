@@ -55,9 +55,9 @@ export default function Home() {
     });
   };
 
-  const copyToClipboard = () => {
-    if (result) {
-      navigator.clipboard.writeText(result);
+  const copyToClipboard = (text: string | null) => {
+    if (text) {
+      navigator.clipboard.writeText(text);
     }
   };
 
@@ -89,22 +89,24 @@ export default function Home() {
     });
   };
 
-  const getSidePanelContent = () => {
-    if (!result) return 'No result generated yet...';
-
-    let contentString = '';
-
+  const getDetailedContentString = () => {
+    if (!result) return '';
     if (mode === 'encrypt') {
-      contentString = JSON.stringify({ encryptedData: result }, null, 2);
+      return JSON.stringify({ encryptedData: result }, null, 2);
     } else {
       try {
         const parsed = JSON.parse(result);
-        contentString = JSON.stringify(parsed, null, 2);
+        return JSON.stringify(parsed, null, 2);
       } catch (e) {
-        // If not valid JSON, treat as a string but still try to highlight if it looks like partial structure
-        contentString = `"${result}"`; // Fallback to string representation
+        return `"${result}"`;
       }
     }
+  };
+
+  const getSidePanelContent = () => {
+    if (!result) return 'No result generated yet...';
+
+    const contentString = getDetailedContentString();
 
     return (
       <div
@@ -231,7 +233,7 @@ export default function Home() {
                   <button className="copy-btn" onClick={handleSwap} title="Swap input">
                     Swap
                   </button>
-                  <button className="copy-btn" onClick={copyToClipboard}>
+                  <button className="copy-btn" onClick={() => copyToClipboard(result)}>
                     Copy
                   </button>
                 </div>
@@ -250,9 +252,20 @@ export default function Home() {
         </div>
 
         <div className="side-panel">
-          <h3>
-            {mode === 'encrypt' ? 'Formatted Encryption Output' : 'Beautified JSON Output'}
-          </h3>
+          <div className="card-header" style={{ marginBottom: '1rem' }}>
+            <h3>
+              {mode === 'encrypt' ? 'Formatted Encryption Output' : 'Beautified JSON Output'}
+            </h3>
+            {result && (
+              <button
+                className="copy-btn"
+                onClick={() => copyToClipboard(getDetailedContentString())}
+                title="Copy formatted content"
+              >
+                Copy
+              </button>
+            )}
+          </div>
           <pre className="json-view">
             {getSidePanelContent()}
           </pre>
