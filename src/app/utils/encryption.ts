@@ -1,39 +1,77 @@
 import crypto from 'crypto';
 
-const ALGORITHM = 'aes-256-cbc';
 const ITERATIONS = 65536;
-const KEY_LENGTH = 32;
+const KEY_LENGTH = 32; // 256 bits = 32 bytes
+const IV_SIZE = 16; // 128 bits = 16 bytes
 const DIGEST = 'sha256';
+const ALGORITHM = 'aes-256-cbc';
 
-function deriveKey(secret: string, salt: string): Buffer {
-  return crypto.pbkdf2Sync(secret, salt, ITERATIONS, KEY_LENGTH, DIGEST);
+/**
+ * Generates the AES encryption key using PBKDF2.
+ */
+function generateKey(salt: string, secretKey: string): Buffer {
+  return crypto.pbkdf2Sync(secretKey, salt, ITERATIONS, KEY_LENGTH, DIGEST);
 }
 
-export function encrypt(text: string, companyId: string, secretKey: string): string {
-  const key = deriveKey(secretKey, companyId);
-  const iv = crypto.randomBytes(16);
+/**
+ * Encrypts data.
+ * Returns Base64(IV + Ciphertext)
+ */
+export function encryptDataUtil(input: string, salt: string, secretKey: string): string {
+  if (!input || !salt || !secretKey) {
+    throw new Error('Input, salt, and secret key cannot be empty');
+  }
+
+  // Generate random IV
+  const iv = crypto.randomBytes(IV_SIZE);
+
+  // Derive key
+  const key = generateKey(salt, secretKey);
+
+  // Create cipher
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
-  let encrypted = cipher.update(text, 'utf8', 'base64');
-  encrypted += cipher.final('base64');
+  // Encrypt (default output is Buffer)
+  let encrypted = cipher.update(input, 'utf8');
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
 
-  // Combine IV and encrypted data (IV is usually needed for decryption)
-  const result = Buffer.concat([iv, Buffer.from(encrypted, 'base64')]);
-  return result.toString('base64');
+  // Combine IV + Encrypted Data
+  const combined = Buffer.concat([iv, encrypted]);
+
+  // Return Base64
+  return combined.toString('base64');
 }
 
-export function decrypt(encryptedBase64: string, companyId: string, secretKey: string): string {
-  const key = deriveKey(secretKey, companyId);
+/**
+ * Decrypts data.
+ * Input is Base64(IV + Ciphertext)
+ */
+export function decryptDataUtil(encryptedBase64: string, salt: string, secretKey: string): string {
+  if (!encryptedBase64 || !salt || !secretKey) {
+    throw new Error('Encrypted data, salt, and secret key cannot be empty');
+  }
 
-  const inputBuffer = Buffer.from(encryptedBase64, 'base64');
+  // Decode Base64
+  const combined = Buffer.from(encryptedBase64, 'base64');
 
-  // Extract IV (first 16 bytes)
-  const iv = inputBuffer.subarray(0, 16);
-  const encryptedText = inputBuffer.subarray(16);
+  if (combined.length <= IV_SIZE) {
+    throw new Error('Invalid encrypted data: too short');
+  }
 
+  // Extract IV
+  const iv = combined.subarray(0, IV_SIZE);
+
+  // Extract Ciphertext
+  const encryptedBytes = combined.subarray(IV_SIZE);
+
+  // Derive key
+  const key = generateKey(salt, secretKey);
+
+  // Create decipher
   const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
 
-  let decrypted = decipher.update(encryptedText);
+  // Decrypt
+  let decrypted = decipher.update(encryptedBytes);
   decrypted = Buffer.concat([decrypted, decipher.final()]);
 
   return decrypted.toString('utf8');

@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🔐 KhairCrypt
 
-## Getting Started
+**KhairCrypt** is a secure, modern web utility designed for encrypting and decrypting sensitive transaction payloads. It is built to strictly adhere to enterprise-grade security standards, utilizing **AES-256-CBC** encryption with **PBKDF2** key derivation.
 
-First, run the development server:
+![KhairCrypt Banner](./src/app/icon.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Robust Security**: Implements AES-256-CBC encryption with PBKDF2-HMAC-SHA256 for key derivation.
+- **Dual Modes**: Seamlessly switch between Encryption (JSON -> Base64) and Decryption (Base64 -> JSON) modes.
+- **Smart Inputs**:
+    - Manage **Company IDs (Salts)** via a preset dropdown (Qatar, Kenya) or manual entry.
+    - Real-time input validation.
+- **Developer Experience**:
+    - **Syntax Highlighting**: Beautifully formatted JSON output for readable debugging.
+    - **One-Click Copy**: Quickly copy raw results to the clipboard.
+    - **Swap Functionality**: Instantly swap output back to input for rapid testing cycles.
+- **Modern UI**:
+    - Fully responsive glassy design (Glassmorphism).
+    - **Dark/Light Mode** support with a cyberpunk-inspired aesthetic.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Technology Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: [Next.js 15](https://nextjs.org/) (React Server Components)
+- **Language**: TypeScript
+- **Styling**: Vanilla CSS (Variables, Flexbox/Grid) with no external UI libraries.
+- **Cryptography**: Node.js native `crypto` module.
 
-## Learn More
+## 🚀 Getting Started
 
-To learn more about Next.js, take a look at the following resources:
+### Prerequisites
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Node.js 18+ installed on your machine.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Installation
 
-## Deploy on Vercel
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/khaircrypt.git
+    cd khaircrypt
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+
+4.  Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🔒 Security Specifications
+
+The application uses the following cryptographic parameters:
+
+- **Algorithm**: `aes-256-cbc`
+- **Key Derivation**: `pbkdf2`
+    - **Digest**: `sha256`
+    - **Iterations**: `65536`
+    - **Key Length**: `32` bytes
+    - **Salt**: Provided Company ID
+- **IV (Initialization Vector)**: Randomly generated `16` bytes (prepended to the encrypted output).
+
+---
+
+© 2025 Khairgate. All rights reserved.

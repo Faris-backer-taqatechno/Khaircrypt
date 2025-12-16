@@ -1,29 +1,21 @@
 'use server';
 
-import { encrypt, decrypt } from './utils/encryption';
+import { encryptDataUtil, decryptDataUtil } from './utils/encryption';
 
-type ActionResponse = {
-    success: boolean;
-    data?: string;
-    error?: string;
-};
-
-export async function encryptAction(text: string, companyId: string, secretKey: string): Promise<ActionResponse> {
+export async function encryptAction(data: string, salt: string, secretKey: string) {
     try {
-        const encrypted = encrypt(text, companyId, secretKey);
+        const encrypted = encryptDataUtil(data, salt, secretKey);
         return { success: true, data: encrypted };
     } catch (error: any) {
-        console.error('Encryption Failed:', error);
-        return { success: false, error: 'Encryption failed. Check your inputs.' };
+        return { success: false, error: error.message || 'Encryption failed' };
     }
 }
 
-export async function decryptAction(encryptedText: string, companyId: string, secretKey: string): Promise<ActionResponse> {
+export async function decryptAction(base64Data: string, salt: string, secretKey: string) {
     try {
-        const decrypted = decrypt(encryptedText, companyId, secretKey);
+        const decrypted = decryptDataUtil(base64Data, salt, secretKey);
         return { success: true, data: decrypted };
     } catch (error: any) {
-        console.error('Decryption Failed:', error);
-        return { success: false, error: 'Decryption failed. Invalid Key, Salt, or Payload.' };
+        return { success: false, error: error.message || 'Decryption failed' };
     }
 }
